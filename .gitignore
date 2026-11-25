@@ -1,0 +1,4 @@
+node_modules/
+.DS_Store
+# Eigene Backups nicht versehentlich hochladen
+focus-timer-backup-*.json

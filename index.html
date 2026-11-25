@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Focus Timer</title>
+  <meta name="description" content="Pomodoro-Timer mit Themen pro Session und Wochenstatistik. Alle Daten bleiben in deinem Browser.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%23e8664f' stroke-width='5'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-mode="focus">
+  <main class="wrap">
+    <header class="top">
+      <h1 class="brand"><span class="brand-ring" aria-hidden="true"></span>Focus Timer</h1>
+      <p class="today-line"><span id="today-total">0 Min.</span> heute · <span id="streak">0</span> <span id="streak-word">Tage</span> am Stück</p>
+    </header>
+
+    <section class="timer-card" aria-label="Timer">
+      <div class="modes" role="tablist" aria-label="Modus">
+        <button type="button" role="tab" class="mode-btn" data-mode="focus" id="mode-focus">Fokus</button>
+        <button type="button" role="tab" class="mode-btn" data-mode="short" id="mode-short">Kurze Pause</button>
+        <button type="button" role="tab" class="mode-btn" data-mode="long" id="mode-long">Lange Pause</button>
+      </div>
+
+      <div class="dial">
+        <svg viewBox="0 0 200 200" class="ring" aria-hidden="true">
+          <circle cx="100" cy="100" r="88" class="ring-track"></circle>
+          <circle cx="100" cy="100" r="88" class="ring-progress" id="ring-progress"></circle>
+        </svg>
+        <div class="dial-center">
+          <p class="clock" id="clock" aria-live="off">25:00</p>
+          <p class="mode-label" id="mode-label">Fokus</p>
+          <div class="cycle" id="cycle" aria-label="Fortschritt bis zur langen Pause"></div>
+        </div>
+      </div>
+
+      <div class="field label-field">
+        <label for="session-label">Woran arbeitest du?</label>
+        <input id="session-label" list="label-list" maxlength="60" autocomplete="off" placeholder="z. B. Mathe, Projekt, Lesen">
+        <datalist id="label-list"></datalist>
+      </div>
+
+      <div class="controls">
+        <button type="button" class="btn btn-ghost" id="btn-reset" title="Zurücksetzen (R)">Zurücksetzen</button>
+        <button type="button" class="btn btn-primary" id="btn-start">Start</button>
+        <button type="button" class="btn btn-ghost" id="btn-skip" title="Überspringen (S)">Überspringen</button>
+      </div>
+      <p class="keys">Leertaste: Start/Pause · R: Zurücksetzen · S: Überspringen</p>
+    </section>
+
+    <section class="panel" id="stats" aria-labelledby="stats-title">
+      <div class="panel-head">
+        <h2 id="stats-title">Woche</h2>
+        <nav class="week-nav" aria-label="Woche wählen">
+          <button type="button" class="icon-btn" id="week-prev" aria-label="Vorherige Woche">‹</button>
+          <button type="button" class="week-label" id="week-label" title="Zur aktuellen Woche">—</button>
+          <button type="button" class="icon-btn" id="week-next" aria-label="Nächste Woche">›</button>
+        </nav>
+      </div>
+      <div class="week-stats">
+        <div class="stat"><p class="stat-label">Fokuszeit</p><p class="stat-value" id="week-total">—</p></div>
+        <div class="stat"><p class="stat-label">Sessions</p><p class="stat-value" id="week-count">—</p></div>
+        <div class="stat"><p class="stat-label">Vorwoche</p><p class="stat-value" id="week-delta">—</p></div>
+      </div>
+      <div class="chart" id="week-chart"></div>
+      <h3 class="sub">Nach Thema</h3>
+      <ol class="label-list" id="label-stats"></ol>
+      <p class="empty" id="label-empty" hidden>In dieser Woche noch keine Fokuszeit.</p>
+    </section>
+
+    <section class="panel" id="history" aria-labelledby="history-title">
+      <h2 id="history-title">Heute</h2>
+      <ul class="session-list" id="session-list"></ul>
+      <p class="empty" id="session-empty">Noch keine Session heute. Drück auf Start.</p>
+    </section>
+
+    <details class="panel settings" id="settings">
+      <summary><h2>Einstellungen &amp; Daten</h2></summary>
+      <form id="settings-form" class="settings-grid">
+        <div class="field"><label for="set-focus">Fokus (Min.)</label><input type="number" id="set-focus" name="focusMin" min="1" max="180"></div>
+        <div class="field"><label for="set-short">Kurze Pause (Min.)</label><input type="number" id="set-short" name="shortMin" min="1" max="60"></div>
+        <div class="field"><label for="set-long">Lange Pause (Min.)</label><input type="number" id="set-long" name="longMin" min="1" max="90"></div>
+        <div class="field"><label for="set-every">Lange Pause nach … Sessions</label><input type="number" id="set-every" name="longEvery" min="2" max="12"></div>
+        <label class="check"><input type="checkbox" id="set-auto-breaks" name="autoStartBreaks"> Pausen automatisch starten</label>
+        <label class="check"><input type="checkbox" id="set-auto-focus" name="autoStartFocus"> Fokus nach der Pause automatisch starten</label>
+        <label class="check"><input type="checkbox" id="set-sound" name="sound"> Ton am Ende</label>
+      </form>
+      <div class="data-actions">
+        <button type="button" class="btn" id="btn-notify">Benachrichtigungen erlauben</button>
+        <button type="button" class="btn" id="export-json">Backup herunterladen</button>
+        <label class="btn" for="import-file">Backup einspielen</label>
+        <input type="file" id="import-file" accept="application/json,.json" class="sr-only">
+        <button type="button" class="btn" id="import-undo" hidden>Import rückgängig</button>
+        <button type="button" class="btn btn-danger" id="reset-all">Alle Sessions löschen</button>
+      </div>
+      <p class="hint" id="data-status" role="status">Alle Daten bleiben in diesem Browser.</p>
+    </details>
+  </main>
+
+  <footer class="wrap footer">Focus Timer · Open Source unter MIT-Lizenz · kein Server, kein Tracking</footer>
+
+  <script src="js/logic.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

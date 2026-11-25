@@ -1,0 +1,15 @@
+{
+  "name": "focus-timer",
+  "version": "1.0.0",
+  "description": "Pomodoro-Timer mit Themen pro Session und Wochenstatistik – läuft komplett im Browser.",
+  "private": true,
+  "license": "MIT",
+  "author": "Matthi1009",
+  "scripts": {
+    "test": "node --test tests/",
+    "start": "python3 -m http.server 8080"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
